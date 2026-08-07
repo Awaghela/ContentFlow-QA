@@ -1,8 +1,5 @@
 # ContentFlow QA — Media Partner Onboarding Validation Platform
 
-> Built for Google resume · Jan 2026  
-> Python · JavaScript · SQL · FFmpeg · XML · PostgreSQL · Docker
-
 ---
 
 ## What it does
