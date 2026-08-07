@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ContentFlow QA — Media Partner Validation Platform</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#05050f;--bg2:#0a0a1a;--bg3:#0f0f22;
+  --s1:rgba(255,255,255,0.03);--s2:rgba(255,255,255,0.055);--s3:rgba(255,255,255,0.08);
+  --b1:rgba(255,255,255,0.07);--b2:rgba(255,255,255,0.13);--b3:rgba(255,255,255,0.22);
+  --tx:#f0effe;--tx2:rgba(240,239,254,0.6);--tx3:rgba(240,239,254,0.35);--tx4:rgba(240,239,254,0.2);
+  --vi:#8b7ff8;--vi2:#b0a8fa;--vi3:rgba(139,127,248,0.15);
+  --cy:#06b6d4;--cy2:#67e8f9;--cy3:rgba(6,182,212,0.12);
+  --gn:#10b981;--gn2:#6ee7b7;--gn3:rgba(16,185,129,0.12);
+  --am:#f59e0b;--am2:#fde68a;--am3:rgba(245,158,11,0.12);
+  --rd:#f43f5e;--rd2:#fda4af;--rd3:rgba(244,63,94,0.12);
+  --pk:#ec4899;--pk2:#f9a8d4;
+  --mono:'JetBrains Mono',monospace;
+  --sans:'Inter',system-ui,sans-serif;
+  --r:14px;--r2:10px;--r3:8px;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden;font-size:14px;line-height:1.6}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px}
+
+/* AMBIENT */
+.amb{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.ab{position:absolute;border-radius:50%;filter:blur(130px);animation:fl 22s ease-in-out infinite alternate}
+.ab1{width:800px;height:800px;top:-350px;left:-250px;background:radial-gradient(circle,rgba(139,127,248,0.1),transparent 65%)}
+.ab2{width:600px;height:600px;top:35%;right:-200px;background:radial-gradient(circle,rgba(6,182,212,0.07),transparent 65%);animation-delay:-8s}
+.ab3{width:500px;height:500px;bottom:-150px;left:30%;background:radial-gradient(circle,rgba(16,185,129,0.06),transparent 65%);animation-delay:-16s}
+@keyframes fl{0%{transform:translate(0,0) scale(1)}100%{transform:translate(30px,25px) scale(1.07)}}
+
+/* LAYOUT */
+.shell{position:relative;z-index:1;display:flex;min-height:100vh}
+
+/* SIDEBAR */
+.sidebar{
+  width:230px;flex-shrink:0;
+  background:rgba(10,10,26,0.85);
+  border-right:1px solid var(--b1);
+  display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;bottom:0;
+  backdrop-filter:blur(24px);z-index:200;
+  transition:transform 0.3s ease;
+}
+.sb-logo{padding:18px 18px 14px;border-bottom:1px solid var(--b1)}
+.sb-logo-mark{display:flex;align-items:center;gap:10px}
+.sb-logo-icon{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#8b7ff8,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.sb-logo-text{font-size:14px;font-weight:700;letter-spacing:-.3px}
+.sb-logo-ver{font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.06em;margin-top:1px}
+.sb-nav{padding:10px 10px;flex:1;overflow-y:auto}
+.sb-sec{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.09em;color:var(--tx4);padding:10px 8px 5px}
+.sb-item{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:var(--r3);font-size:13px;font-weight:500;color:var(--tx3);cursor:pointer;transition:all .15s;border:none;background:none;width:100%;text-align:left;position:relative}
+.sb-item:hover{background:var(--s2);color:var(--tx2)}
+.sb-item.active{background:rgba(139,127,248,0.15);color:var(--vi2)}
+.sb-item.active .sb-ic{color:var(--vi)}
+.sb-ic{font-size:15px;width:18px;text-align:center;flex-shrink:0}
+.sb-badge{margin-left:auto;font-size:10px;font-weight:600;padding:2px 6px;border-radius:8px}
+.sb-badge.r{background:rgba(244,63,94,.2);color:#f87171}
+.sb-badge.g{background:rgba(16,185,129,.2);color:#34d399}
+.sb-badge.v{background:rgba(139,127,248,.2);color:var(--vi2)}
+.sb-partner-section{padding:0 10px;flex:1}
+.sb-partner-item{display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:var(--r3);cursor:pointer;transition:all .15s;border:1px solid transparent}
+.sb-partner-item:hover{background:var(--s2);border-color:var(--b1)}
+.sb-partner-item.active{background:var(--vi3);border-color:rgba(139,127,248,.2)}
+.sb-partner-avatar{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;color:#fff}
+.sb-partner-name{font-size:12px;font-weight:500;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-partner-rate{font-size:10px;font-family:var(--mono);margin-left:auto;flex-shrink:0}
+.sb-footer{padding:14px;border-top:1px solid var(--b1)}
+.sb-footer-card{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r2);padding:10px 12px}
+.sb-fc-label{font-size:10px;color:var(--tx4);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.sb-fc-name{font-size:12px;font-weight:600}
+.sb-fc-status{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--gn2);margin-top:5px}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--gn);box-shadow:0 0 5px var(--gn);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* MAIN */
+.main{margin-left:230px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+
+/* TOPBAR */
+.topbar{
+  position:sticky;top:0;z-index:100;
+  background:rgba(5,5,15,0.85);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--b1);
+  height:54px;padding:0 24px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.tb-crumb{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--tx3)}
+.tb-crumb .cur{color:var(--tx);font-weight:500}
+.tb-crumb .sep{font-size:11px}
+.tb-right{display:flex;align-items:center;gap:10px}
+.tb-clock{font-size:11px;color:var(--tx4);font-family:var(--mono)}
+.run-btn{display:flex;align-items:center;gap:7px;background:linear-gradient(135deg,#7c72f5,#4338ca);border:none;border-radius:var(--r3);color:#fff;font-size:12px;font-weight:600;padding:7px 15px;cursor:pointer;transition:all .2s;font-family:var(--sans)}
+.run-btn:hover{transform:translateY(-1px);box-shadow:0 4px 18px rgba(124,114,245,.4)}
+.run-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* PAGE */
+.page{padding:24px;animation:pgIn .3s ease}
+@keyframes pgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* SECTION */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;margin-top:24px}
+.sec-hdr:first-child{margin-top:0}
+.sec-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3);display:flex;align-items:center;gap:8px;white-space:nowrap}
+.sec-title::after{content:'';flex:1;height:1px;background:var(--b1);min-width:20px}
+.sec-act{font-size:12px;color:var(--vi2);cursor:pointer;opacity:.8;white-space:nowrap}
+.sec-act:hover{opacity:1}
+
+/* HERO */
+.hero{
+  background:linear-gradient(135deg,rgba(139,127,248,.14) 0%,rgba(10,10,26,.6) 45%,rgba(6,182,212,.08) 100%);
+  border:1px solid rgba(139,127,248,.2);border-radius:16px;
+  padding:26px 28px;margin-bottom:22px;position:relative;overflow:hidden;
+}
+.hero::after{content:'';position:absolute;top:0;right:0;bottom:0;width:45%;background:radial-gradient(ellipse 70% 60% at 90% 40%,rgba(139,127,248,.12),transparent);pointer-events:none}
+.hero-eye{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--vi2);margin-bottom:9px;display:flex;align-items:center;gap:7px}
+.hero-eye::before{content:'';width:20px;height:1px;background:var(--vi2)}
+.hero h1{font-size:26px;font-weight:800;letter-spacing:-.5px;line-height:1.15;background:linear-gradient(110deg,#fff 25%,#b0a8fa 60%,#67e8f9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:7px}
+.hero-desc{font-size:13px;color:var(--tx2);max-width:540px;margin-bottom:18px}
+.hero-stats{display:flex;gap:24px;flex-wrap:wrap;align-items:center}
+.hs{display:flex;flex-direction:column;gap:2px}
+.hs-v{font-size:20px;font-weight:700;font-family:var(--mono);letter-spacing:-.5px}
+.hs-l{font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em}
+.hs-v.green{color:var(--gn2)}.hs-v.red{color:var(--rd2)}.hs-v.amber{color:var(--am2)}.hs-v.violet{color:var(--vi2)}.hs-v.cyan{color:var(--cy2)}
+.hd{width:1px;background:var(--b1);align-self:stretch}
+
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+@media(max-width:1200px){.kpi-grid{grid-template-columns:repeat(3,1fr)}}
+
+.kpi{border-radius:var(--r);padding:15px 15px 12px;border:1px solid var(--b1);position:relative;overflow:hidden;cursor:default;transition:transform .2s,border-color .2s,box-shadow .2s;animation:kpiFadeUp .5s ease both}
+.kpi:hover{transform:translateY(-2px);border-color:var(--b2);box-shadow:0 8px 28px rgba(0,0,0,.4)}
+@keyframes kpiFadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.kpi-glow{position:absolute;top:-25px;right:-25px;width:90px;height:90px;border-radius:50%;opacity:.18;pointer-events:none}
+.kpi-lbl{font-size:10px;text-transform:uppercase;letter-spacing:.07em;opacity:.5;margin-bottom:9px}
+.kpi-val{font-size:26px;font-weight:700;font-family:var(--mono);line-height:1;letter-spacing:-1px;margin-bottom:3px}
+.kpi-sub{font-size:10px;opacity:.4}
+.kpi-bar{position:absolute;bottom:0;left:0;right:0;height:2px;background:rgba(255,255,255,.05)}
+.kpi-fill{height:100%;width:0;transition:width 1.8s cubic-bezier(.34,1.4,.64,1)}
+
+.kp{background:linear-gradient(145deg,rgba(5,55,42,.85),rgba(4,50,55,.7))}.kp .kpi-glow{background:radial-gradient(circle,#10b981,transparent)}.kp .kpi-val{color:#6ee7b7}.kp .kpi-fill{background:linear-gradient(90deg,#10b981,#06b6d4)}
+.kf{background:linear-gradient(145deg,rgba(65,8,25,.85),rgba(75,15,15,.7))}.kf .kpi-glow{background:radial-gradient(circle,#f43f5e,transparent)}.kf .kpi-val{color:#fda4af}.kf .kpi-fill{background:linear-gradient(90deg,#f43f5e,#fb923c)}
+.kw{background:linear-gradient(145deg,rgba(55,25,3,.85),rgba(65,32,5,.7))}.kw .kpi-glow{background:radial-gradient(circle,#f59e0b,transparent)}.kw .kpi-val{color:#fde68a}.kw .kpi-fill{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
+.kb{background:linear-gradient(145deg,rgba(12,18,65,.85),rgba(16,22,80,.7))}.kb .kpi-glow{background:radial-gradient(circle,#6366f1,transparent)}.kb .kpi-val{color:#a5b4fc}.kb .kpi-fill{background:linear-gradient(90deg,#6366f1,#8b5cf6)}
+.kv{background:linear-gradient(145deg,rgba(40,12,85,.85),rgba(50,16,100,.7))}.kv .kpi-glow{background:radial-gradient(circle,#8b7ff8,transparent)}.kv .kpi-val{color:#b0a8fa}.kv .kpi-fill{background:linear-gradient(90deg,#8b7ff8,#ec4899)}
+.kc{background:linear-gradient(145deg,rgba(3,38,52,.85),rgba(4,46,62,.7))}.kc .kpi-glow{background:radial-gradient(circle,#06b6d4,transparent)}.kc .kpi-val{color:#67e8f9}.kc .kpi-fill{background:linear-gradient(90deg,#06b6d4,#8b7ff8)}
+
+/* PANELS */
+.panel{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:18px}
+.panel-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.panel-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--tx3)}
+.ptag{font-size:10px;font-weight:600;padding:2px 8px;border-radius:6px}
+.ptag-g{background:rgba(16,185,129,.15);color:#34d399}
+.ptag-r{background:rgba(244,63,94,.15);color:#fb7185}
+.ptag-a{background:rgba(245,158,11,.15);color:#fbbf24}
+.ptag-v{background:rgba(139,127,248,.15);color:var(--vi2)}
+
+/* TWO/THREE COL */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media(max-width:950px){.g2,.g3{grid-template-columns:1fr}}
+
+/* BADGES */
+.badge{font-size:11px;font-weight:500;padding:3px 9px;border-radius:9px;border:1px solid;display:inline-block}
+.bv{background:var(--vi3);border-color:rgba(139,127,248,.3);color:var(--vi2)}
+.bg{background:var(--gn3);border-color:rgba(16,185,129,.3);color:var(--gn2)}
+.ba{background:var(--am3);border-color:rgba(245,158,11,.3);color:var(--am2)}
+.br{background:var(--rd3);border-color:rgba(244,63,94,.3);color:var(--rd2)}
+.bc{background:var(--cy3);border-color:rgba(6,182,212,.3);color:var(--cy2)}
+
+/* STATUS PILL */
+.sp{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:10px;border:1px solid}
+.sp-live{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.3);color:#34d399}
+.sp-fail{background:rgba(244,63,94,.1);border-color:rgba(244,63,94,.3);color:#fb7185}
+.sp-warn{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3);color:#fbbf24}
+.sp-queue{background:rgba(139,127,248,.1);border-color:rgba(139,127,248,.3);color:var(--vi2)}
+.sp-dot{width:5px;height:5px;border-radius:50%;background:currentColor;animation:pulse 2s infinite}
+
+/* PARTNER CARD */
+.partner-card{
+  border-radius:var(--r);border:1px solid;padding:22px;
+  position:relative;overflow:hidden;cursor:pointer;
+  transition:transform .2s,box-shadow .2s;
+}
+.partner-card:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(0,0,0,.5)}
+.partner-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.pc-avatar{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;flex-shrink:0;margin-bottom:14px}
+.pc-name{font-size:17px;font-weight:700;letter-spacing:-.3px;margin-bottom:3px}
+.pc-type{font-size:12px;color:var(--tx3);margin-bottom:10px}
+.pc-badges{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px}
+.pc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.pc-stat{background:rgba(255,255,255,.04);border:1px solid var(--b1);border-radius:var(--r2);padding:10px 12px}
+.pc-sv{font-size:18px;font-weight:700;font-family:var(--mono);letter-spacing:-.5px}
+.pc-sl{font-size:10px;color:var(--tx3);margin-top:1px}
+.pc-info{display:flex;flex-direction:column;gap:0}
+.pc-ir{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-top:1px solid rgba(255,255,255,.05)}
+.pc-ir:first-child{border-top:none}
+.pc-ik{font-size:11px;color:var(--tx3)}
+.pc-iv{font-size:11px;font-weight:500;color:var(--tx)}
+.pc-footer{margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.05);display:flex;justify-content:space-between;align-items:center}
+.view-btn{font-size:12px;font-weight:600;padding:6px 14px;border-radius:var(--r3);border:1px solid;cursor:pointer;transition:all .15s;font-family:var(--sans)}
+
+/* PARTNER PAGE */
+.partner-page-hero{
+  border-radius:var(--r);border:1px solid;padding:24px;
+  margin-bottom:20px;position:relative;overflow:hidden;
+}
+.pph-head{display:flex;align-items:flex-start;gap:18px;margin-bottom:20px}
+.pph-avatar{width:60px;height:60px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#fff;flex-shrink:0}
+.pph-name{font-size:22px;font-weight:800;letter-spacing:-.4px;margin-bottom:3px}
+.pph-type{font-size:13px;color:var(--tx2);margin-bottom:8px}
+.pph-stats{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:1100px){.pph-stats{grid-template-columns:repeat(3,1fr)}}
+.pph-stat{background:rgba(0,0,0,.3);border:1px solid var(--b1);border-radius:var(--r2);padding:12px 14px}
+.pph-sv{font-size:20px;font-weight:700;font-family:var(--mono);letter-spacing:-.5px}
+.pph-sl{font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+
+/* SCENARIO CARDS */
+.sc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:1100px){.sc-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.sc-grid{grid-template-columns:1fr}}
+.sc-card{border-radius:var(--r);border:1px solid var(--b1);padding:15px;background:var(--s1);cursor:pointer;position:relative;overflow:hidden;transition:transform .2s,border-color .2s;animation:kpiFadeUp .5s ease both}
+.sc-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:var(--r) var(--r) 0 0}
+.sc-card:hover{transform:translateY(-2px);border-color:var(--b2)}
+.sc-card.open{border-color:rgba(139,127,248,.3)}
+.sc-head{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.sc-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.sc-title{font-size:13px;font-weight:600}
+.sc-sub{font-size:10px;color:var(--tx3);margin-top:1px}
+.sc-chev{margin-left:auto;font-size:11px;color:var(--tx3);transition:transform .25s;flex-shrink:0}
+.sc-pills{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px}
+.sc-pill{font-size:10px;font-weight:600;padding:2px 7px;border-radius:7px;border:1px solid}
+.spp{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.25);color:#6ee7b7}
+.spf{background:rgba(244,63,94,.1);border-color:rgba(244,63,94,.25);color:#fda4af}
+.spw{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.25);color:#fde68a}
+.sc-prog{display:flex;align-items:center;gap:7px}
+.sc-track{flex:1;height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
+.sc-fill{height:100%;border-radius:3px;width:0;transition:width 1.8s cubic-bezier(.34,1.4,.64,1)}
+.sc-pct{font-size:11px;font-weight:600;color:var(--tx2);font-family:var(--mono);min-width:32px;text-align:right}
+.sc-exp{overflow:hidden;max-height:0;opacity:0;transition:max-height .4s cubic-bezier(.4,0,.2,1),opacity .3s}
+.sc-exp.open{max-height:200px;opacity:1}
+.sc-row{display:flex;justify-content:space-between;padding:5px 0;border-top:1px solid rgba(255,255,255,.05);font-size:11px}
+.sc-rk{color:var(--tx3)}.sc-rv{font-weight:600;color:var(--tx);font-family:var(--mono)}
+
+/* TIMELINE */
+.tl{position:relative;padding-left:22px}
+.tl::before{content:'';position:absolute;left:8px;top:12px;bottom:12px;width:1px;background:var(--b1)}
+.tl-item{position:relative;padding:0 0 16px 16px}
+.tl-item:last-child{padding-bottom:0}
+.tl-dot{position:absolute;left:-7px;top:4px;width:10px;height:10px;border-radius:50%;border:2px solid var(--b2);background:var(--bg2)}
+.tl-item.ok .tl-dot{background:linear-gradient(135deg,#10b981,#06b6d4);border-color:transparent;box-shadow:0 0 8px rgba(16,185,129,.5)}
+.tl-item.wr .tl-dot{background:linear-gradient(135deg,#f59e0b,#fbbf24);border-color:transparent;box-shadow:0 0 8px rgba(245,158,11,.5)}
+.tl-item.er .tl-dot{background:linear-gradient(135deg,#f43f5e,#ec4899);border-color:transparent;box-shadow:0 0 8px rgba(244,63,94,.5)}
+.tl-title{font-size:13px;font-weight:600;color:var(--tx);display:block;margin-bottom:2px}
+.tl-desc{font-size:11px;color:var(--tx3);margin-bottom:2px}
+.tl-time{font-size:10px;color:var(--tx4);font-family:var(--mono)}
+
+/* ISSUES TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{padding:7px 11px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--tx3);border-bottom:1px solid var(--b1)}
+.tbl td{padding:9px 11px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:rgba(255,255,255,.02)}
+.aid{font-family:var(--mono);font-size:11px;color:var(--vi2)}
+.ctag{font-size:10px;font-weight:500;padding:2px 7px;border-radius:5px;background:rgba(139,127,248,.12);color:var(--vi2)}
+.sev-c{background:rgba(244,63,94,.15);color:#fb7185;font-size:10px;font-weight:600;padding:2px 7px;border-radius:6px;display:inline-flex;align-items:center;gap:3px}
+.sev-w{background:rgba(245,158,11,.15);color:#fbbf24;font-size:10px;font-weight:600;padding:2px 7px;border-radius:6px;display:inline-flex;align-items:center;gap:3px}
+.sev-p{background:rgba(16,185,129,.15);color:#34d399;font-size:10px;font-weight:600;padding:2px 7px;border-radius:6px;display:inline-flex;align-items:center;gap:3px}
+
+/* UPLOAD */
+.upload-zone{border:2px dashed rgba(139,127,248,.3);border-radius:var(--r);padding:40px 24px;text-align:center;cursor:pointer;transition:all .2s;background:rgba(139,127,248,.03)}
+.upload-zone:hover,.upload-zone.drag{border-color:rgba(139,127,248,.6);background:rgba(139,127,248,.07)}
+.uz-icon{font-size:40px;margin-bottom:12px}
+.uz-title{font-size:16px;font-weight:700;margin-bottom:4px}
+.uz-sub{font-size:12px;color:var(--tx3)}
+.uz-fmts{display:flex;justify-content:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+.fmt{font-size:11px;font-weight:500;padding:3px 10px;border-radius:7px;background:var(--s2);border:1px solid var(--b1);color:var(--tx2)}
+
+/* PARTNER FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+@media(max-width:700px){.form-grid{grid-template-columns:1fr}}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--tx3)}
+.form-input,.form-select{background:var(--s2);border:1px solid var(--b2);border-radius:var(--r3);padding:9px 12px;font-size:13px;color:var(--tx);font-family:var(--sans);outline:none;transition:border-color .15s;width:100%}
+.form-input:focus,.form-select:focus{border-color:rgba(139,127,248,.5)}
+.form-select option{background:#0a0a1a;color:var(--tx)}
+.form-submit{background:linear-gradient(135deg,#7c72f5,#4338ca);border:none;border-radius:var(--r3);color:#fff;font-size:13px;font-weight:600;padding:10px 24px;cursor:pointer;transition:all .2s;font-family:var(--sans)}
+.form-submit:hover{transform:translateY(-1px);box-shadow:0 4px 18px rgba(124,114,245,.4)}
+
+/* CODE BLOCK */
+.code{background:rgba(0,0,0,.4);border:1px solid var(--b1);border-radius:var(--r2);padding:13px;font-family:var(--mono);font-size:11px;color:#a59ff8;line-height:1.7;overflow:auto}
+.cm{color:#4ade80}.cs{color:#fde68a}.ck{color:#67e8f9}
+
+/* DONUT */
+.donut-wrap{position:relative}
+.donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+.dc-v{font-size:24px;font-weight:700;font-family:var(--mono);letter-spacing:-1px;background:linear-gradient(135deg,#10b981,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.dc-l{font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em}
+
+/* LEGEND */
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--tx2)}
+.leg-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+
+/* RUN HISTORY */
+.rh-row{display:flex;align-items:center;gap:12px;padding:10px 10px;border-radius:var(--r3);cursor:pointer;transition:background .15s;border-bottom:1px solid rgba(255,255,255,.04)}
+.rh-row:last-child{border-bottom:none}
+.rh-row:hover{background:rgba(255,255,255,.025)}
+.rh-id{font-family:var(--mono);font-size:11px;color:var(--vi2);min-width:120px}
+.rh-partner{font-size:12px;font-weight:500;flex:1}
+.rh-date{font-size:11px;color:var(--tx3);font-family:var(--mono);min-width:130px}
+.rh-bar{flex:1;height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;min-width:80px;max-width:100px}
+.rh-fill{height:100%;border-radius:2px}
+.rh-rate{font-size:12px;font-weight:700;font-family:var(--mono);min-width:46px;text-align:right}
+.rh-rate.high{color:#34d399}.rh-rate.mid{color:#fbbf24}.rh-rate.low{color:#fb7185}
+
+/* REPORT */
+.rec-card{padding:14px 16px;border-radius:var(--r2);border:1px solid;margin-bottom:8px}
+
+/* TABS */
+.tabs{display:flex;gap:2px;background:rgba(255,255,255,.03);padding:3px;border-radius:var(--r2);margin-bottom:14px}
+.tab{flex:1;padding:7px 11px;font-size:12px;font-weight:500;border:none;background:transparent;color:var(--tx3);border-radius:var(--r3);cursor:pointer;transition:all .15s;font-family:var(--sans)}
+.tab.on{background:rgba(139,127,248,.2);color:var(--vi2)}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;right:22px;z-index:999;background:rgba(18,18,38,.96);border:1px solid rgba(139,127,248,.3);border-radius:var(--r);padding:11px 16px;font-size:13px;backdrop-filter:blur(12px);display:flex;align-items:center;gap:9px;animation:toastIn .3s ease;box-shadow:0 8px 28px rgba(0,0,0,.5);max-width:340px}
+@keyframes toastIn{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+/* SPINNER */
+.spin{width:13px;height:13px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:rot .7s linear infinite;flex-shrink:0}
+@keyframes rot{to{transform:rotate(360deg)}}
+
+/* DIVIDER */
+.vd{width:1px;background:var(--b1);align-self:stretch}
+</style>
+</head>
+<body>
+<div class="amb"><div class="ab ab1"></div><div class="ab ab2"></div><div class="ab ab3"></div></div>
+
+<div class="shell">
+<!-- ═══════════════════ SIDEBAR ═══════════════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-mark">
+      <div class="sb-logo-icon">🎬</div>
+      <div>
+        <div class="sb-logo-text">ContentFlow QA</div>
+        <div class="sb-logo-ver">v1.0 · Jan 2026</div>
+      </div>
+    </div>
+  </div>
+  <div class="sb-nav">
+    <div class="sb-sec">Platform</div>
+    <button class="sb-item active" onclick="nav('dashboard')"><span class="sb-ic">📊</span>Dashboard</button>
+    <button class="sb-item" onclick="nav('partners')"><span class="sb-ic">🏢</span>Partners<span class="sb-badge g" id="sb-partner-count">4</span></button>
+    <button class="sb-item" onclick="nav('runs')"><span class="sb-ic">▶</span>Validation Runs<span class="sb-badge r">2</span></button>
+    <div class="sb-sec">Validation</div>
+    <button class="sb-item" onclick="nav('scenarios')"><span class="sb-ic">🔍</span>Scenarios</button>
+    <button class="sb-item" onclick="nav('issues')"><span class="sb-ic">⚠️</span>Issues<span class="sb-badge r" id="sb-issue-count">31</span></button>
+    <button class="sb-item" onclick="nav('upload')"><span class="sb-ic">📤</span>Add Partner</button>
+    <div class="sb-sec">Reports</div>
+    <button class="sb-item" onclick="nav('reports')"><span class="sb-ic">📋</span>Ops Report</button>
+    <button class="sb-item" onclick="nav('pipeline')"><span class="sb-ic">⚙️</span>Pipeline</button>
+    <div class="sb-sec" id="sb-partners-label" style="display:none">Partners</div>
+    <div id="sb-partner-list"></div>
+  </div>
+  <div class="sb-footer">
+    <div class="sb-footer-card">
+      <div class="sb-fc-label">Platform status</div>
+      <div class="sb-fc-name">4 partners · 1150 assets</div>
+      <div class="sb-fc-status"><span class="live-dot"></span>Pipeline active</div>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══════════════════ MAIN ═══════════════════ -->
+<main class="main">
+  <div class="topbar">
+    <div class="tb-crumb">
+      <span>ContentFlow QA</span>
+      <span class="sep">›</span>
+      <span class="cur" id="tb-cur">Dashboard</span>
+    </div>
+    <div class="tb-right">
+      <span class="tb-clock" id="clock">—</span>
+      <button class="run-btn" id="runBtn" onclick="triggerRun()">▶ Run Validation</button>
+    </div>
+  </div>
+
+  <!-- All views injected here -->
+  <div id="app-root"></div>
+</main>
+</div>
+
+<div class="toast" id="toast" style="display:none"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════════
+//  API CLIENT — talks to the live FastAPI backend
+// ══════════════════════════════════════════════════════════════════════════════
+
+// Change this to your deployed Railway URL, or leave empty for same-origin
+const API_BASE = localStorage.getItem('cfq_api')
+  || 'https://contentflow-qa-production.up.railway.app';
+
+async function api(path, opts = {}) {
+  const res = await fetch(API_BASE + path, {
+    headers: { 'Content-Type': 'application/json' },
+    ...opts,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+const API = {
+  health:       ()             => api('/api/health'),
+  metrics:      ()             => api('/api/metrics'),
+  partners:     ()             => api('/api/partners'),
+  partner:      (id)           => api(`/api/partners/${id}`),
+  createPartner:(body)         => api('/api/partners', { method:'POST', body: JSON.stringify(body) }),
+  deletePartner:(id)           => api(`/api/partners/${id}`, { method:'DELETE' }),
+  triggerRun:   (id, n = 300)  => api(`/api/partners/${id}/runs?asset_count=${n}`, { method:'POST' }),
+  runs:         ()             => api('/api/runs'),
+  run:          (id)           => api(`/api/runs/${id}`),
+  report:       (id)           => api(`/api/runs/${id}/report`),
+  scenarios:    ()             => api('/api/scenarios'),
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════════════════════════════
+
+let PARTNERS = [];
+let SCENARIOS = [];
+let METRICS = {};
+let RUNS = [];
+let currentView = 'dashboard';
+let currentPartner = null;
+let charts = {};
+let apiOnline = false;
+
+const CAT_META = {
+  metadata:      { icon:'📋', cls:'sc-meta',   grad:'linear-gradient(90deg,#8b5cf6,#22d3ee)' },
+  xml_feed:      { icon:'📦', cls:'sc-xml',    grad:'linear-gradient(90deg,#f59e0b,#f43f5e)' },
+  asset_check:   { icon:'🔗', cls:'sc-asset',  grad:'linear-gradient(90deg,#10b981,#22d3ee)' },
+  media_probe:   { icon:'🎬', cls:'sc-ffmpeg', grad:'linear-gradient(90deg,#f43f5e,#fb923c)' },
+  duplicate_ids: { icon:'🔁', cls:'sc-dupe',   grad:'linear-gradient(90deg,#f59e0b,#fbbf24)' },
+  golive:        { icon:'🚀', cls:'sc-live',   grad:'linear-gradient(90deg,#ec4899,#8b7ff8)' },
+};
+
+const STATUS_META = {
+  live:        { cls:'sp-live',  label:'Live' },
+  remediation: { cls:'sp-warn',  label:'Remediation' },
+  blocked:     { cls:'sp-fail',  label:'Blocked' },
+  queued:      { cls:'sp-queue', label:'Queued' },
+  running:     { cls:'sp-queue', label:'Running' },
+};
+
+const TIER_CLS = {
+  'Premium Tier':'bv', 'Enterprise Tier':'bc',
+  'Starter Tier':'ba', 'Standard Tier':'bv',
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  BOOT
+// ══════════════════════════════════════════════════════════════════════════════
+
+async function boot() {
+  try {
+    await API.health();
+    apiOnline = true;
+    [PARTNERS, SCENARIOS, METRICS, RUNS] = await Promise.all([
+      API.partners(), API.scenarios(), API.metrics(), API.runs(),
+    ]);
+    showToast('✅ Connected to live API');
+  } catch (e) {
+    apiOnline = false;
+    console.warn('API offline:', e.message);
+    showToast('⚠️ API offline — showing demo data');
+    PARTNERS = DEMO_PARTNERS;
+    SCENARIOS = DEMO_SCENARIOS;
+    METRICS = { partners:4, total_assets:1150, passed:0, failed:0, warned:0, avg_pass_rate:null, scenarios:40 };
+    RUNS = [];
+  }
+  buildSidebar();
+  render();
+}
+
+async function refresh() {
+  if (!apiOnline) return;
+  try {
+    [PARTNERS, METRICS, RUNS] = await Promise.all([
+      API.partners(), API.metrics(), API.runs(),
+    ]);
+    buildSidebar();
+  } catch (e) { console.warn('refresh failed', e); }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  NAV
+// ══════════════════════════════════════════════════════════════════════════════
+
+const LABELS = {
+  dashboard:'Dashboard', partners:'All Partners', scenarios:'Scenarios',
+  issues:'Issues', upload:'Add Partner', runs:'Validation Runs',
+  reports:'Ops Report', pipeline:'Pipeline',
+};
+
+async function nav(view, partnerId) {
+  currentView = view;
+  currentPartner = partnerId || null;
+  document.getElementById('tb-cur').textContent =
+    partnerId ? (PARTNERS.find(p=>p.id===partnerId)?.name || 'Partner') : (LABELS[view] || view);
+
+  document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.sb-partner-item').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(el => {
+    const oc = el.getAttribute('onclick') || '';
+    if (oc.includes(`'${view}'`) && !partnerId) el.classList.add('active');
+  });
+  if (partnerId) document.getElementById('sbp-'+partnerId)?.classList.add('active');
+
+  Object.values(charts).forEach(c => { try{c.destroy()}catch(e){} });
+  charts = {};
+  window.scrollTo(0,0);
+  await render();
+}
+
+function buildSidebar() {
+  const list = document.getElementById('sb-partner-list');
+  const label = document.getElementById('sb-partners-label');
+  if (!PARTNERS.length) { list.innerHTML=''; label.style.display='none'; return; }
+  label.style.display='';
+  list.innerHTML = PARTNERS.map(p => {
+    const rc = p.pass_rate==null ? 'var(--vi2)' : p.pass_rate>=95 ? '#34d399' : p.pass_rate>=88 ? '#fbbf24' : '#fb7185';
+    return `<div class="sb-partner-item" id="sbp-${p.id}" onclick="nav('partner','${p.id}')">
+      <div class="sb-partner-avatar" style="background:linear-gradient(135deg,${p.color1},${p.color2})">${p.initial}</div>
+      <span class="sb-partner-name">${p.name.split(' ')[0]}</span>
+      <span class="sb-partner-rate" style="color:${rc}">${p.pass_rate!=null ? p.pass_rate+'%' : '—'}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('sb-partner-count').textContent = PARTNERS.length;
+  const totalFail = PARTNERS.reduce((a,p)=>a+(p.failed||0),0);
+  document.getElementById('sb-issue-count').textContent = totalFail || '0';
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════════════════════════════════════════
+
+async function render() {
+  const root = document.getElementById('app-root');
+  root.innerHTML = `<div class="page"><div style="text-align:center;padding:60px;color:var(--tx3)">
+    <div class="spin" style="margin:0 auto 12px"></div>Loading…</div></div>`;
+
+  let html = '';
+  if (currentView === 'partner' && currentPartner)  html = await viewPartner(currentPartner);
+  else if (currentView === 'dashboard')             html = viewDashboard();
+  else if (currentView === 'partners')              html = viewPartners();
+  else if (currentView === 'scenarios')             html = viewScenarios();
+  else if (currentView === 'issues')                html = await viewIssues();
+  else if (currentView === 'upload')                html = viewUpload();
+  else if (currentView === 'runs')                  html = viewRuns();
+  else if (currentView === 'reports')               html = await viewReports();
+  else if (currentView === 'pipeline')              html = viewPipeline();
+
+  root.innerHTML = html;
+  setTimeout(() => { animateCounters(); animateBars(); buildCharts(); }, 60);
+}
+
+// ─── DASHBOARD ────────────────────────────────────────────────────────────────
+
+function viewDashboard() {
+  const m = METRICS;
+  const rated = PARTNERS.filter(p => p.pass_rate != null);
+  const avg = m.avg_pass_rate != null ? m.avg_pass_rate : '—';
+  const hasRuns = rated.length > 0;
+
+  return `<div class="page">
+    <div class="hero">
+      <div class="hero-eye">ContentFlow QA · Media Partner Onboarding Platform</div>
+      <h1>Validation Overview</h1>
+      <div class="hero-desc">Live quality gate across all media partner submissions. 40 validation scenarios covering metadata, XML feeds, FFmpeg media probes, asset availability, duplicate detection, and go-live eligibility.</div>
+      <div class="hero-stats">
+        <div class="hs"><div class="hs-v violet cnt" data-t="${m.partners||0}">0</div><div class="hs-l">Partners</div></div>
+        <div class="hd"></div>
+        <div class="hs"><div class="hs-v violet cnt" data-t="${m.total_assets||0}">0</div><div class="hs-l">Total assets</div></div>
+        <div class="hd"></div>
+        <div class="hs"><div class="hs-v green cnt" data-t="${m.passed||0}">0</div><div class="hs-l">Checks passed</div></div>
+        <div class="hd"></div>
+        <div class="hs"><div class="hs-v red cnt" data-t="${m.failed||0}">0</div><div class="hs-l">Failures</div></div>
+        <div class="hd"></div>
+        <div class="hs"><div class="hs-v amber">${avg}${avg!=='—'?'%':''}</div><div class="hs-l">Avg pass rate</div></div>
+        <div class="hd"></div>
+        <div class="hs"><div class="hs-v cyan cnt" data-t="${m.total_runs||0}">0</div><div class="hs-l">Runs executed</div></div>
+      </div>
+    </div>
+
+    <div class="sec-hdr"><div class="sec-title">Platform metrics</div>
+      <span class="sec-act" onclick="refresh().then(render)">↻ Refresh</span></div>
+    <div class="kpi-grid">
+      ${kpi('kp','Checks passed',m.passed||0,`across ${m.partners} partners`,88,0)}
+      ${kpi('kf','Critical failures',m.failed||0,'blocking go-live',55,.06)}
+      ${kpi('kw','Warnings',m.warned||0,'ops review needed',40,.12)}
+      ${kpi('kb','Scenarios',40,`${m.categories||6} categories`,100,.18)}
+      ${kpi('kv','Avg pass rate',avg==='—'?'—':avg,'target ≥ 95%',avg==='—'?0:avg,.24,avg==='—'?'':'%')}
+      ${kpi('kc','Validation runs',m.total_runs||0,'total executed',60,.30)}
+    </div>
+
+    ${hasRuns ? `
+    <div class="sec-hdr"><div class="sec-title">Analysis</div></div>
+    <div class="g2">
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title">Pass rates by partner</div></div>
+        <div style="height:220px;position:relative"><canvas id="chPartners"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title">Check outcomes</div></div>
+        <div class="donut-wrap" style="height:180px;position:relative">
+          <canvas id="chDonut"></canvas>
+          <div class="donut-center"><div class="dc-v">${avg}%</div><div class="dc-l">pass rate</div></div>
+        </div>
+        <div class="legend">
+          <div class="leg-item"><div class="leg-dot" style="background:#10b981"></div>Passed (${m.passed})</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#f43f5e"></div>Failed (${m.failed})</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#f59e0b"></div>Warned (${m.warned})</div>
+        </div>
+      </div>
+    </div>` : `
+    <div class="panel" style="text-align:center;padding:40px;margin-top:14px">
+      <div style="font-size:38px;margin-bottom:10px">▶</div>
+      <div style="font-size:16px;font-weight:600;margin-bottom:6px">No validation runs yet</div>
+      <div style="font-size:13px;color:var(--tx3);margin-bottom:16px">Pick a partner and trigger a run to see live pipeline results.</div>
+      <button class="run-btn" style="margin:0 auto" onclick="nav('partners')">View partners →</button>
+    </div>`}
+
+    <div class="sec-hdr"><div class="sec-title">Partners</div>
+      <span class="sec-act" onclick="nav('partners')">View all →</span></div>
+    <div class="panel">
+      ${PARTNERS.map(p => {
+        const st = STATUS_META[p.status] || STATUS_META.queued;
+        const rc = p.pass_rate==null?'':p.pass_rate>=95?'high':p.pass_rate>=88?'mid':'low';
+        const fc = p.pass_rate==null?'#6366f1':p.pass_rate>=95?'#10b981':p.pass_rate>=88?'#f59e0b':'#f43f5e';
+        return `<div class="rh-row" onclick="nav('partner','${p.id}')">
+          <div class="sb-partner-avatar" style="background:linear-gradient(135deg,${p.color1},${p.color2});width:24px;height:24px;font-size:10px">${p.initial}</div>
+          <span class="rh-partner">${p.name}</span>
+          <span class="rh-date">${p.total_assets} assets</span>
+          <div class="rh-bar"><div class="rh-fill" style="width:${p.pass_rate||0}%;background:${fc}"></div></div>
+          <span class="rh-rate ${rc}">${p.pass_rate!=null?p.pass_rate+'%':'—'}</span>
+          <span style="min-width:110px"><span class="sp ${st.cls}"><span class="sp-dot"></span>${st.label}</span></span>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+function kpi(cls, label, val, sub, width, delay, suffix='') {
+  const isNum = typeof val === 'number';
+  return `<div class="kpi ${cls}" style="animation-delay:${delay}s">
+    <div class="kpi-glow"></div>
+    <div class="kpi-lbl">${label}</div>
+    <div class="kpi-val">${isNum?`<span class="cnt" data-t="${val}">0</span>`:val}${suffix}</div>
+    <div class="kpi-sub">${sub}</div>
+    <div class="kpi-bar"><div class="kpi-fill" data-w="${width}"></div></div>
+  </div>`;
+}
+
+// ─── ALL PARTNERS ─────────────────────────────────────────────────────────────
+
+function viewPartners() {
+  return `<div class="page">
+    <div class="sec-hdr" style="margin-top:0"><div class="sec-title">Media partners (${PARTNERS.length})</div>
+      <span class="sec-act" onclick="nav('upload')">+ Add partner →</span></div>
+    <div class="g2">${PARTNERS.map(partnerCard).join('')}</div>
+  </div>`;
+}
+
+function partnerCard(p) {
+  const st = STATUS_META[p.status] || STATUS_META.queued;
+  const rc = p.pass_rate==null?'var(--vi2)':p.pass_rate>=95?'#34d399':p.pass_rate>=88?'#fbbf24':'#fb7185';
+  const bg = `linear-gradient(135deg,${p.color1}22,rgba(10,10,26,.6),${p.color2}14)`;
+  return `<div class="partner-card" style="background:${bg};border-color:${p.color1}44" onclick="nav('partner','${p.id}')">
+    <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,${p.color1},${p.color2})"></div>
+    <div class="pc-avatar" style="background:linear-gradient(135deg,${p.color1},${p.color2})">${p.initial}</div>
+    <div class="pc-name">${p.name}</div>
+    <div class="pc-type">${p.type}</div>
+    <div class="pc-badges">
+      <span class="badge ${TIER_CLS[p.tier]||'bv'}">${p.tier}</span>
+      <span class="sp ${st.cls}"><span class="sp-dot"></span>${st.label}</span>
+    </div>
+    <div class="pc-stats">
+      <div class="pc-stat"><div class="pc-sv" style="color:#6ee7b7">${p.passed ?? '—'}</div><div class="pc-sl">Passed</div></div>
+      <div class="pc-stat"><div class="pc-sv" style="color:#fda4af">${p.failed ?? '—'}</div><div class="pc-sl">Failed</div></div>
+      <div class="pc-stat"><div class="pc-sv" style="color:${rc}">${p.pass_rate!=null?p.pass_rate+'%':'—'}</div><div class="pc-sl">Pass rate</div></div>
+    </div>
+    <div class="pc-info">
+      <div class="pc-ir"><span class="pc-ik">Contract</span><span class="pc-iv" style="font-family:var(--mono)">${p.contract}</span></div>
+      <div class="pc-ir"><span class="pc-ik">Content</span><span class="pc-iv">${p.content_type}</span></div>
+      <div class="pc-ir"><span class="pc-ik">Territories</span><span class="pc-iv">${p.territories}</span></div>
+      <div class="pc-ir"><span class="pc-ik">Feed</span><span class="pc-iv">${p.feed_type}</span></div>
+      <div class="pc-ir"><span class="pc-ik">Assets</span><span class="pc-iv">${p.total_assets}</span></div>
+    </div>
+    <div class="pc-footer">
+      <span style="font-size:11px;color:var(--tx3)">${p.run_count} run${p.run_count!==1?'s':''} · ${p.onboarded}</span>
+      <button class="view-btn" style="background:${p.color1}22;border-color:${p.color1}55;color:${p.color1}">View →</button>
+    </div>
+  </div>`;
+}
+
+// ─── PARTNER DETAIL ───────────────────────────────────────────────────────────
+
+async function viewPartner(pid) {
+  let p;
+  try { p = await API.partner(pid); }
+  catch (e) { p = PARTNERS.find(x=>x.id===pid); }
+  if (!p) return `<div class="page"><div class="panel">Partner not found.</div></div>`;
+
+  const st = STATUS_META[p.status] || STATUS_META.queued;
+  const rc = p.pass_rate==null?'var(--vi2)':p.pass_rate>=95?'#34d399':p.pass_rate>=88?'#fbbf24':'#fb7185';
+  const bg = `linear-gradient(135deg,${p.color1}22,rgba(10,10,26,.6),${p.color2}14)`;
+  const run = p.latest_run;
+  const s = run?.summary || {};
+  const cats = run?.categories || [];
+  const issues = run?.issues || [];
+
+  return `<div class="page">
+    <div class="partner-page-hero" style="background:${bg};border-color:${p.color1}44">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,${p.color1},${p.color2})"></div>
+      <div class="pph-head">
+        <div class="pph-avatar" style="background:linear-gradient(135deg,${p.color1},${p.color2})">${p.initial}</div>
+        <div style="flex:1">
+          <div class="pph-name">${p.name}</div>
+          <div class="pph-type">${p.type}</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <span class="badge ${TIER_CLS[p.tier]||'bv'}">${p.tier}</span>
+            <span class="sp ${st.cls}"><span class="sp-dot"></span>${st.label}</span>
+            <span class="badge bv">${p.contract}</span>
+            <span class="badge bc">${p.feed_type}</span>
+          </div>
+        </div>
+        <button class="run-btn" onclick="runFor('${p.id}')" id="pRunBtn">▶ Run Validation</button>
+      </div>
+      <div class="pph-stats">
+        <div class="pph-stat"><div class="pph-sv">${p.total_assets}</div><div class="pph-sl">Assets</div></div>
+        <div class="pph-stat"><div class="pph-sv" style="color:#6ee7b7">${s.pass ?? '—'}</div><div class="pph-sl">Checks passed</div></div>
+        <div class="pph-stat"><div class="pph-sv" style="color:#fda4af">${s.fail ?? '—'}</div><div class="pph-sl">Failed</div></div>
+        <div class="pph-stat"><div class="pph-sv" style="color:#fde68a">${s.warn ?? '—'}</div><div class="pph-sl">Warnings</div></div>
+        <div class="pph-stat"><div class="pph-sv" style="color:${rc}">${p.pass_rate!=null?p.pass_rate+'%':'Pending'}</div><div class="pph-sl">Pass rate</div></div>
+        <div class="pph-stat"><div class="pph-sv">${p.run_count}</div><div class="pph-sl">Runs</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;font-size:12px">
+        <div><span style="color:var(--tx3)">Onboarded: </span><strong>${p.onboarded}</strong></div>
+        <div><span style="color:var(--tx3)">Content: </span><strong>${p.content_type}</strong></div>
+        <div><span style="color:var(--tx3)">Territories: </span><strong>${p.territories}</strong></div>
+        <div><span style="color:var(--tx3)">Formats: </span><strong>${p.formats}</strong></div>
+      </div>
+    </div>
+
+    ${!run ? `
+      <div class="panel" style="text-align:center;padding:56px 24px">
+        <div style="font-size:44px;margin-bottom:14px">⏳</div>
+        <div style="font-size:18px;font-weight:700;margin-bottom:8px">No validation run yet</div>
+        <div style="color:var(--tx2);margin-bottom:20px;font-size:13px">${p.name} is onboarded but hasn't been validated. Trigger the pipeline to run 40 scenarios across 6 categories.</div>
+        <button class="run-btn" style="margin:0 auto;font-size:13px;padding:9px 22px" onclick="runFor('${p.id}')">▶ Run Validation Now</button>
+      </div>` : `
+
+    <div class="sec-hdr"><div class="sec-title">Validation analysis</div>
+      <span class="sec-act" style="font-family:var(--mono);font-size:11px">${run.run_id}</span></div>
+    <div class="g2">
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title">Failures by category</div>
+          <span class="ptag ptag-r">${s.fail} failed</span></div>
+        <div style="height:210px;position:relative"><canvas id="chFail"></canvas></div>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title">Go-live readiness</div>
+          <span class="ptag ${s.pass_rate>=95?'ptag-g':'ptag-a'}">${s.pass_rate>=95?'Above':'Below'} 95%</span></div>
+        <div class="donut-wrap" style="height:170px;position:relative">
+          <canvas id="chPd"></canvas>
+          <div class="donut-center"><div class="dc-v" style="font-size:22px">${s.pass_rate}%</div><div class="dc-l">pass rate</div></div>
+        </div>
+        <div class="legend">
+          <div class="leg-item"><div class="leg-dot" style="background:#10b981"></div>Pass (${s.pass})</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#f43f5e"></div>Fail (${s.fail})</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#f59e0b"></div>Warn (${s.warn})</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec-hdr"><div class="sec-title">Validation scenarios — click to expand</div></div>
+    <div class="sc-grid">
+      ${cats.map((c,i) => {
+        const meta = CAT_META[c.key] || CAT_META.metadata;
+        const sc = SCENARIOS.find(x=>x.key===c.key) || {};
+        return `<div class="sc-card ${meta.cls}" style="animation-delay:${i*.07}s" id="scc${i}" onclick="togScenario(${i})">
+          <div class="sc-head">
+            <div class="sc-icon">${meta.icon}</div>
+            <div style="flex:1"><div class="sc-title">${c.label}</div><div class="sc-sub">${sc.description||''}</div></div>
+            <svg class="sc-chev" id="chv${i}" width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="sc-pills">
+            <span class="sc-pill spp">${c.pass} pass</span>
+            ${c.fail?`<span class="sc-pill spf">${c.fail} fail</span>`:''}
+            ${c.warn?`<span class="sc-pill spw">${c.warn} warn</span>`:''}
+          </div>
+          <div class="sc-prog">
+            <div class="sc-track"><div class="sc-fill" data-w="${c.pass_rate}" style="background:${meta.grad}"></div></div>
+            <span class="sc-pct">${c.pass_rate}%</span>
+          </div>
+          <div class="sc-exp" id="exp${i}">
+            <div class="sc-row"><span class="sc-rk">Total checks</span><span class="sc-rv">${c.total}</span></div>
+            <div class="sc-row"><span class="sc-rk">Passed</span><span class="sc-rv">${c.pass}</span></div>
+            <div class="sc-row"><span class="sc-rk">Failed</span><span class="sc-rv">${c.fail}</span></div>
+            <div class="sc-row"><span class="sc-rk">Warnings</span><span class="sc-rv">${c.warn}</span></div>
+            <div class="sc-row"><span class="sc-rk">Execution time</span><span class="sc-rv">${c.duration_s}s</span></div>
+            <div class="sc-row"><span class="sc-rk">Checks defined</span><span class="sc-rv">${sc.checks||'—'}</span></div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <div class="sec-hdr"><div class="sec-title">Issues found (${issues.length})</div></div>
+    <div class="panel">
+      <table class="tbl">
+        <thead><tr><th>Asset ID</th><th>Category</th><th>Scenario</th><th>Message</th><th>Severity</th></tr></thead>
+        <tbody>${issues.slice(0,25).map(i=>`<tr>
+          <td><span class="aid">${i.asset_id}</span></td>
+          <td><span class="ctag">${i.category}</span></td>
+          <td style="font-family:var(--mono);font-size:10px;color:var(--tx3)">${i.scenario}</td>
+          <td style="color:var(--tx2);font-size:11px">${i.message}</td>
+          <td><span class="${i.severity==='fail'?'sev-c':'sev-w'}">${i.severity==='fail'?'● FAIL':'◐ WARN'}</span></td>
+        </tr>`).join('')}</tbody>
+      </table>
+    </div>
+
+    <div class="sec-hdr"><div class="sec-title">Pipeline execution log</div></div>
+    <div class="panel">
+      <div class="tl">
+        ${cats.map(c => {
+          const cls = c.fail===0 ? 'ok' : c.pass_rate>=90 ? 'wr' : 'er';
+          return `<div class="tl-item ${cls}"><span class="tl-dot"></span>
+            <span class="tl-title">${c.label}</span>
+            <span class="tl-desc">${c.pass} passed · ${c.fail} failed · ${c.warn} warnings</span>
+            <span class="tl-time">${c.duration_s}s · ${c.total} checks</span></div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    ${p.run_history?.length ? `
+    <div class="sec-hdr"><div class="sec-title">Run history</div></div>
+    <div class="panel">
+      ${p.run_history.map(r=>{
+        const rc2 = r.pass_rate>=95?'high':r.pass_rate>=88?'mid':'low';
+        const fc = r.pass_rate>=95?'#10b981':r.pass_rate>=88?'#f59e0b':'#f43f5e';
+        return `<div class="rh-row">
+          <span class="rh-id">${r.run_id}</span>
+          <span class="rh-partner">${p.name}</span>
+          <span class="rh-date">${new Date(r.created_at).toLocaleString()}</span>
+          <div class="rh-bar"><div class="rh-fill" style="width:${r.pass_rate||0}%;background:${fc}"></div></div>
+          <span class="rh-rate ${rc2}">${r.pass_rate!=null?r.pass_rate+'%':'—'}</span>
+        </div>`;
+      }).join('')}
+    </div>` : ''}
+    `}
+  </div>`;
+}
+
+function togScenario(i) {
+  const exp = document.getElementById('exp'+i);
+  const chv = document.getElementById('chv'+i);
+  const card = document.getElementById('scc'+i);
+  if (!exp) return;
+  const open = exp.classList.toggle('open');
+  card.classList.toggle('open', open);
+  chv.style.transform = open ? 'rotate(180deg)' : '';
+}
+
+// ─── SCENARIOS ────────────────────────────────────────────────────────────────
+
+function viewScenarios() {
+  return `<div class="page">
+    <div class="sec-hdr" style="margin-top:0"><div class="sec-title">Validation scenario catalogue</div></div>
+    <div class="sc-grid">
+      ${SCENARIOS.map((s,i)=>{
+        const meta = CAT_META[s.key] || CAT_META.metadata;
+        return `<div class="sc-card ${meta.cls}" style="animation-delay:${i*.07}s">
+          <div class="sc-head">
+            <div class="sc-icon">${meta.icon}</div>
+            <div style="flex:1"><div class="sc-title">${s.label}</div><div class="sc-sub">${s.description}</div></div>
+          </div>
+          <div class="sc-pills"><span class="sc-pill spp">${s.checks} checks defined</span></div>
+          <div style="font-size:11px;color:var(--tx3);margin-top:8px;font-family:var(--mono)">validators/${s.key}.py</div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="sec-hdr"><div class="sec-title">Coverage summary</div></div>
+    <div class="panel">
+      <table class="tbl">
+        <thead><tr><th>Category</th><th>Module</th><th>Checks</th><th>What it validates</th></tr></thead>
+        <tbody>${SCENARIOS.map(s=>`<tr>
+          <td style="font-weight:600">${s.label}</td>
+          <td style="font-family:var(--mono);font-size:11px;color:var(--vi2)">validators/${s.key}.py</td>
+          <td><span class="ctag">${s.checks}</span></td>
+          <td style="color:var(--tx2);font-size:11px">${s.description}</td>
+        </tr>`).join('')}
+        <tr style="border-top:2px solid var(--b2)">
+          <td style="font-weight:700">Total</td><td></td>
+          <td><span class="sev-p">${SCENARIOS.reduce((a,s)=>a+s.checks,0)} checks</span></td>
+          <td style="color:var(--tx3);font-size:11px">Across ${SCENARIOS.length} validator modules</td>
+        </tr></tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+// ─── ISSUES ───────────────────────────────────────────────────────────────────
+
+async function viewIssues() {
+  const withRuns = PARTNERS.filter(p => p.last_run);
+  if (!withRuns.length) {
+    return `<div class="page"><div class="panel" style="text-align:center;padding:50px">
+      <div style="font-size:38px;margin-bottom:10px">✓</div>
+      <div style="font-size:16px;font-weight:600">No issues yet</div>
+      <div style="color:var(--tx3);font-size:13px;margin-top:6px">Run a validation to surface issues.</div>
+    </div></div>`;
+  }
+  const all = [];
+  for (const p of withRuns) {
+    try {
+      const run = await API.run(p.last_run);
+      (run.issues || []).forEach(i => all.push({...i, partner:p.name, pid:p.id}));
+    } catch(e) {}
+  }
+  all.sort((a,b) => (a.severity==='fail'?0:1) - (b.severity==='fail'?0:1));
+
+  return `<div class="page">
+    <div class="sec-hdr" style="margin-top:0"><div class="sec-title">All issues across platform (${all.length})</div></div>
+    <div class="panel">
+      <table class="tbl">
+        <thead><tr><th>Partner</th><th>Asset ID</th><th>Category</th><th>Scenario</th><th>Message</th><th>Severity</th></tr></thead>
+        <tbody>${all.slice(0,80).map(i=>`<tr onclick="nav('partner','${i.pid}')" style="cursor:pointer">
+          <td style="font-size:12px;font-weight:500">${i.partner.split(' ')[0]}</td>
+          <td><span class="aid">${i.asset_id}</span></td>
+          <td><span class="ctag">${i.category}</span></td>
+          <td style="font-family:var(--mono);font-size:10px;color:var(--tx3)">${i.scenario}</td>
+          <td style="color:var(--tx2);font-size:11px">${i.message}</td>
+          <td><span class="${i.severity==='fail'?'sev-c':'sev-w'}">${i.severity==='fail'?'● FAIL':'◐ WARN'}</span></td>
+        </tr>`).join('')}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+// ─── ADD PARTNER ──────────────────────────────────────────────────────────────
+
+function viewUpload() {
+  return `<div class="page">
+    <div class="sec-hdr" style="margin-top:0"><div class="sec-title">Onboard a new media partner</div></div>
+    <div class="g2">
+      <div>
+        <div class="panel" style="margin-bottom:14px">
+          <div class="panel-hdr"><div class="panel-title">Partner details</div>
+            <span class="ptag ${apiOnline?'ptag-g':'ptag-r'}">${apiOnline?'API connected':'API offline'}</span></div>
+          <div class="form-grid">
+            <div class="form-group"><label class="form-label">Partner name *</label><input class="form-input" id="f-name" placeholder="Summit Pictures"/></div>
+            <div class="form-group"><label class="form-label">Company type</label><input class="form-input" id="f-type" placeholder="Independent Studio · LA, CA"/></div>
+            <div class="form-group"><label class="form-label">Content type</label><input class="form-input" id="f-content" placeholder="Feature films, documentaries"/></div>
+            <div class="form-group"><label class="form-label">Territories</label><input class="form-input" id="f-terr" placeholder="US, GB, CA"/></div>
+            <div class="form-group"><label class="form-label">Feed format</label>
+              <select class="form-select" id="f-feed"><option>XML (XSD v2.1)</option><option>XML (XSD v2.0)</option><option>XML (XSD v1.8)</option><option>JSON manifest</option></select></div>
+            <div class="form-group"><label class="form-label">Tier</label>
+              <select class="form-select" id="f-tier"><option>Starter Tier</option><option>Standard Tier</option><option>Premium Tier</option><option>Enterprise Tier</option></select></div>
+            <div class="form-group"><label class="form-label">Total assets</label><input class="form-input" id="f-assets" type="number" value="200"/></div>
+            <div class="form-group"><label class="form-label">Video formats</label><input class="form-input" id="f-formats" placeholder="H.264, HEVC"/></div>
+          </div>
+          <button class="form-submit" onclick="submitPartner()" id="addBtn">+ Create Partner Profile</button>
+          <div id="addResult" style="margin-top:12px"></div>
+        </div>
+
+        <div class="upload-zone" id="dz" onclick="document.getElementById('fi').click()"
+          ondragover="event.preventDefault();this.classList.add('drag')"
+          ondragleave="this.classList.remove('drag')" ondrop="onDrop(event)">
+          <input type="file" id="fi" accept=".xml,.json" style="display:none" onchange="onPick(event)">
+          <div class="uz-icon">📤</div>
+          <div class="uz-title">Attach content feed</div>
+          <div class="uz-sub">Drop the partner's XML or JSON manifest</div>
+          <div class="uz-fmts"><span class="fmt">.xml</span><span class="fmt">.json</span><span class="fmt">XSD v1.8–2.1</span></div>
+        </div>
+        <div id="upResult" style="margin-top:12px"></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="panel">
+          <div class="panel-hdr"><div class="panel-title">What happens next</div></div>
+          <div class="tl">
+            <div class="tl-item ok"><span class="tl-dot"></span><span class="tl-title">Profile created</span><span class="tl-desc">Contract ID assigned, tier + territories locked</span></div>
+            <div class="tl-item ok"><span class="tl-dot"></span><span class="tl-title">Feed ingested</span><span class="tl-desc">XML/JSON parsed against XSD schema</span></div>
+            <div class="tl-item ok"><span class="tl-dot"></span><span class="tl-title">Metadata validated</span><span class="tl-desc">12 required fields checked per asset</span></div>
+            <div class="tl-item ok"><span class="tl-dot"></span><span class="tl-title">CDN URLs probed</span><span class="tl-desc">Reachability, HTTPS, cache headers</span></div>
+            <div class="tl-item ok"><span class="tl-dot"></span><span class="tl-title">FFmpeg probe</span><span class="tl-desc">Codec, bitrate, resolution, container</span></div>
+            <div class="tl-item ok"><span class="tl-dot"></span><span class="tl-title">Duplicate scan</span><span class="tl-desc">content_id uniqueness cross-partner</span></div>
+            <div class="tl-item ok"><span class="tl-dot"></span><span class="tl-title">Go-live gate</span><span class="tl-desc">Rights, launch dates, ratings lock</span></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-hdr"><div class="panel-title">XML feed format</div></div>
+          <div class="code">&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;Content xmlns="urn:contentflow:v1"&gt;
+  &lt;ContentID&gt;CF-0001&lt;/ContentID&gt;
+  &lt;Title&gt;The Great Adventure&lt;/Title&gt;
+  &lt;Genre&gt;action&lt;/Genre&gt;
+  &lt;Rating&gt;PG-13&lt;/Rating&gt;
+  &lt;Duration&gt;5400&lt;/Duration&gt;
+  &lt;AvailEnd&gt;2027-12-31&lt;/AvailEnd&gt;
+&lt;/Content&gt;</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function submitPartner() {
+  const name = document.getElementById('f-name').value.trim();
+  const res = document.getElementById('addResult');
+  if (!name) { res.innerHTML = errBox('Partner name is required'); return; }
+
+  const btn = document.getElementById('addBtn');
+  btn.disabled = true; btn.textContent = 'Creating…';
+
+  const body = {
+    name,
+    type: document.getElementById('f-type').value.trim() || 'Media Partner',
+    content_type: document.getElementById('f-content').value.trim() || 'Not specified',
+    territories: document.getElementById('f-terr').value.trim() || 'TBD',
+    formats: document.getElementById('f-formats').value.trim() || 'TBD',
+    feed_type: document.getElementById('f-feed').value,
+    tier: document.getElementById('f-tier').value,
+    total_assets: parseInt(document.getElementById('f-assets').value) || 100,
+  };
+
+  try {
+    const p = await API.createPartner(body);
+    res.innerHTML = `<div style="padding:13px 15px;border-radius:10px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);font-size:13px">
+      <div style="font-weight:600;color:#34d399;margin-bottom:6px">✅ ${p.name} created</div>
+      <div style="font-size:12px;color:var(--tx2)">Contract <strong style="color:var(--tx);font-family:var(--mono)">${p.contract}</strong> · ${p.total_assets} assets queued</div>
+    </div>`;
+    await refresh();
+    showToast(`✅ ${p.name} onboarded`);
+    setTimeout(() => nav('partner', p.id), 900);
+  } catch (e) {
+    res.innerHTML = errBox(e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = '+ Create Partner Profile';
+  }
+}
+
+function errBox(msg) {
+  return `<div style="padding:12px;border-radius:10px;background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.25);font-size:13px;color:#fda4af">❌ ${msg}</div>`;
+}
+
+function onDrop(e){ e.preventDefault(); document.getElementById('dz').classList.remove('drag'); doUpload(e.dataTransfer.files[0]); }
+function onPick(e){ doUpload(e.target.files[0]); }
+
+async function doUpload(file) {
+  if (!file) return;
+  const res = document.getElementById('upResult');
+  const ext = file.name.split('.').pop().toLowerCase();
+  if (!['xml','json'].includes(ext)) { res.innerHTML = errBox('Only .xml and .json accepted'); return; }
+  res.innerHTML = `<div style="padding:12px;border-radius:10px;background:var(--s2);border:1px solid var(--b1);font-size:13px;color:var(--vi2)">⏳ Uploading ${file.name}…</div>`;
+  try {
+    const form = new FormData(); form.append('file', file);
+    const r = await fetch(API_BASE + '/api/upload', { method:'POST', body: form });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || 'Upload failed');
+    res.innerHTML = `<div style="padding:13px 15px;border-radius:10px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);font-size:13px">
+      <div style="font-weight:600;color:#34d399;margin-bottom:8px">✅ Feed uploaded</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;font-size:12px;color:var(--tx2)">
+        <div>File: <strong style="color:var(--tx)">${d.filename}</strong></div>
+        <div>Type: <strong style="color:var(--tx)">${(d.type||'').toUpperCase()}</strong></div>
+        <div>Size: <strong style="color:var(--tx)">${((d.size_bytes||0)/1024).toFixed(1)} KB</strong></div>
+        <div>Status: <strong style="color:#34d399">Ready</strong></div>
+      </div></div>`;
+    showToast('✅ Feed uploaded');
+  } catch (e) { res.innerHTML = errBox(e.message); }
+}
+
+// ─── RUNS ─────────────────────────────────────────────────────────────────────
+
+function viewRuns() {
+  if (!RUNS.length) {
+    return `<div class="page"><div class="panel" style="text-align:center;padding:50px">
+      <div style="font-size:38px;margin-bottom:10px">▶</div>
+      <div style="font-size:16px;font-weight:600">No runs yet</div>
+      <div style="color:var(--tx3);font-size:13px;margin-top:6px">Trigger a validation from any partner page.</div>
+      <button class="run-btn" style="margin:16px auto 0" onclick="nav('partners')">View partners →</button>
+    </div></div>`;
+  }
+  return `<div class="page">
+    <div class="sec-hdr" style="margin-top:0"><div class="sec-title">Validation runs (${RUNS.length})</div>
+      <span class="sec-act" onclick="refresh().then(render)">↻ Refresh</span></div>
+    <div class="panel">
+      ${RUNS.map(r=>{
+        const rate = r.summary?.pass_rate;
+        const rc = rate==null?'':rate>=95?'high':rate>=88?'mid':'low';
+        const fc = rate==null?'#6366f1':rate>=95?'#10b981':rate>=88?'#f59e0b':'#f43f5e';
+        const stc = r.status==='complete'?'sp-live':r.status==='running'?'sp-queue':'sp-warn';
+        return `<div class="rh-row" onclick="nav('partner','${r.partner_id}')">
+          <span class="rh-id">${r.run_id}</span>
+          <span class="rh-partner">${r.partner_name}</span>
+          <span class="rh-date">${new Date(r.created_at).toLocaleString()}</span>
+          <div class="rh-bar"><div class="rh-fill" style="width:${rate||0}%;background:${fc}"></div></div>
+          <span class="rh-rate ${rc}">${rate!=null?rate+'%':'—'}</span>
+          <span style="min-width:105px"><span class="sp ${stc}"><span class="sp-dot"></span>${r.status}</span></span>
+          <span style="font-size:11px;color:var(--tx3)">${r.asset_count} assets</span>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+// ─── REPORTS ──────────────────────────────────────────────────────────────────
+
+async function viewReports() {
+  const withRuns = PARTNERS.filter(p => p.last_run);
+  if (!withRuns.length) {
+    return `<div class="page"><div class="panel" style="text-align:center;padding:50px">
+      <div style="font-size:38px;margin-bottom:10px">📋</div>
+      <div style="font-size:16px;font-weight:600">No report data</div>
+      <div style="color:var(--tx3);font-size:13px;margin-top:6px">Run a validation first.</div>
+    </div></div>`;
+  }
+  const reports = [];
+  for (const p of withRuns) {
+    try { reports.push({ partner:p, report: await API.report(p.last_run) }); } catch(e){}
+  }
+  const totFail = reports.reduce((a,r)=>a+r.report.summary.fail,0);
+  const totBlocked = reports.reduce((a,r)=>a+(r.report.summary.blocked_assets||0),0);
+  const avg = (reports.reduce((a,r)=>a+r.report.summary.pass_rate,0)/reports.length).toFixed(1);
+
+  return `<div class="page">
+    <div class="sec-hdr" style="margin-top:0"><div class="sec-title">Platform ops report</div></div>
+    <div class="g2">
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title">Executive summary</div>
+          <span class="ptag ${avg>=95?'ptag-g':'ptag-a'}">${avg>=95?'Clear':'Action required'}</span></div>
+        <div style="font-size:13px;line-height:1.8;color:var(--tx2)">
+          <p style="margin-bottom:12px"><strong style="color:var(--tx)">${PARTNERS.length} partners</strong> onboarded, <strong style="color:var(--tx)">${reports.length}</strong> validated across <strong style="color:var(--tx)">${METRICS.total_assets}</strong> submitted assets.</p>
+          <p style="margin-bottom:12px">Platform pass rate is <strong style="color:${avg>=95?'#34d399':'#fbbf24'}">${avg}%</strong> against the <strong style="color:var(--tx)">95% go-live threshold</strong>. <strong style="color:#fb7185">${totBlocked} assets</strong> are blocked across ${reports.filter(r=>r.report.summary.fail>0).length} partners.</p>
+          <div style="padding:12px;border-radius:10px;background:rgba(244,63,94,.07);border:1px solid rgba(244,63,94,.18);font-size:12px;color:#fda4af">
+            🔴 <strong>Recommendation:</strong> ${reports[0].report.recommendation}
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-hdr"><div class="panel-title">Pass rate by partner</div></div>
+        <div style="height:240px;position:relative"><canvas id="chReport"></canvas></div>
+      </div>
+    </div>
+
+    <div class="sec-hdr"><div class="sec-title">Partner status matrix</div></div>
+    <div class="panel">
+      <table class="tbl">
+        <thead><tr><th>Partner</th><th>Assets</th><th>Checks</th><th>Passed</th><th>Failed</th><th>Pass rate</th><th>Blocked</th><th>Status</th></tr></thead>
+        <tbody>${PARTNERS.map(p=>{
+          const r = reports.find(x=>x.partner.id===p.id)?.report;
+          const st = STATUS_META[p.status]||STATUS_META.queued;
+          const rc = p.pass_rate==null?'var(--vi2)':p.pass_rate>=95?'#34d399':p.pass_rate>=88?'#fbbf24':'#fb7185';
+          return `<tr onclick="nav('partner','${p.id}')" style="cursor:pointer">
+            <td style="font-weight:600">${p.name}</td>
+            <td style="font-family:var(--mono)">${p.total_assets}</td>
+            <td style="font-family:var(--mono)">${r?.summary.total_checks ?? '—'}</td>
+            <td style="font-family:var(--mono);color:#6ee7b7">${r?.summary.pass ?? '—'}</td>
+            <td style="font-family:var(--mono);color:#fda4af">${r?.summary.fail ?? '—'}</td>
+            <td style="font-family:var(--mono);font-weight:700;color:${rc}">${p.pass_rate!=null?p.pass_rate+'%':'—'}</td>
+            <td style="font-family:var(--mono);color:#fb7185">${r?.summary.blocked_assets ?? '—'}</td>
+            <td><span class="sp ${st.cls}"><span class="sp-dot"></span>${st.label}</span></td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table>
+    </div>
+
+    <div class="sec-hdr"><div class="sec-title">Category performance across platform</div></div>
+    <div class="panel">
+      <table class="tbl">
+        <thead><tr><th>Category</th>${reports.map(r=>`<th>${r.partner.name.split(' ')[0]}</th>`).join('')}<th>Avg</th></tr></thead>
+        <tbody>${(reports[0]?.report.by_category||[]).map((c,ci)=>{
+          const rates = reports.map(r => r.report.by_category[ci]?.pass_rate ?? 0);
+          const a = (rates.reduce((x,y)=>x+y,0)/rates.length).toFixed(1);
+          return `<tr>
+            <td style="font-weight:600">${c.label}</td>
+            ${rates.map(v=>`<td style="font-family:var(--mono);color:${v>=95?'#34d399':v>=88?'#fbbf24':'#fb7185'}">${v}%</td>`).join('')}
+            <td style="font-family:var(--mono);font-weight:700;color:${a>=95?'#34d399':a>=88?'#fbbf24':'#fb7185'}">${a}%</td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+// ─── PIPELINE ─────────────────────────────────────────────────────────────────
+
+function viewPipeline() {
+  const rows = (arr) => arr.map(([k,v])=>`<div class="pc-ir"><span class="pc-ik">${k}</span><span class="pc-iv" style="font-family:var(--mono)">${v}</span></div>`).join('');
+  return `<div class="page">
+    <div class="sec-hdr" style="margin-top:0"><div class="sec-title">Pipeline architecture</div>
+      <span class="sec-act">${apiOnline?'● API online':'○ API offline'}</span></div>
+    <div class="g3">
+      <div class="panel"><div class="panel-hdr"><div class="panel-title">Validation engine</div></div>
+        ${rows([['Runtime','Python 3.12'],['API','FastAPI'],['Async','asyncio'],['XML','lxml + xmlschema'],['Media','FFmpeg / ffprobe'],['HTTP','httpx async'],['Workers','4 concurrent']])}</div>
+      <div class="panel"><div class="panel-hdr"><div class="panel-title">Data layer</div></div>
+        ${rows([['Database','PostgreSQL 16'],['ORM','SQLAlchemy 2.0'],['Driver','asyncpg'],['Migrations','Alembic'],['Tables','validation_runs'],['','validation_results'],['Views','3 reporting views']])}</div>
+      <div class="panel"><div class="panel-hdr"><div class="panel-title">Infrastructure</div></div>
+        ${rows([['Container','Docker'],['Backend','python:3.12-slim'],['Host','Railway'],['Region','us-west'],['Tests','pytest · 35 cases'],['Records','300 seeded assets'],['CLI','run_validation.py']])}</div>
+    </div>
+
+    <div class="sec-hdr"><div class="sec-title">API endpoints</div></div>
+    <div class="panel">
+      <table class="tbl">
+        <thead><tr><th>Method</th><th>Endpoint</th><th>Returns</th></tr></thead>
+        <tbody>${[
+          ['GET','/api/health','Service health + counts'],
+          ['GET','/api/metrics','Platform-wide aggregate metrics'],
+          ['GET','/api/partners','All partner profiles'],
+          ['GET','/api/partners/{id}','Partner detail + latest run'],
+          ['POST','/api/partners','Create a partner profile'],
+          ['POST','/api/partners/{id}/runs','Trigger validation pipeline'],
+          ['GET','/api/runs','All validation runs'],
+          ['GET','/api/runs/{id}','Full run results'],
+          ['GET','/api/runs/{id}/report','Ops-review report'],
+          ['GET','/api/scenarios','Validation scenario catalogue'],
+          ['POST','/api/upload','Upload XML/JSON feed'],
+        ].map(([m,e,d])=>`<tr>
+          <td><span class="ctag" style="background:${m==='GET'?'rgba(16,185,129,.15)':'rgba(139,127,248,.15)'};color:${m==='GET'?'#6ee7b7':'#b0a8fa'}">${m}</span></td>
+          <td style="font-family:var(--mono);font-size:11px;color:var(--vi2)">${e}</td>
+          <td style="color:var(--tx2);font-size:12px">${d}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+    </div>
+
+    <div class="sec-hdr"><div class="sec-title">Test coverage — 35 workflow cases</div></div>
+    <div class="panel">
+      <table class="tbl">
+        <thead><tr><th>Section</th><th>Cases</th><th>Covers</th></tr></thead>
+        <tbody>${[
+          ['Status changes','TC-01 → TC-07','pass/fail/warn transitions, rights expiry, ratings lock, approval flags'],
+          ['Missing fields','TC-08 → TC-14','required vs recommended, multiple missing, format errors, XML elements'],
+          ['Repeated issues','TC-15 → TC-19','same asset multi-validator, batch patterns, duplicate & cross-partner IDs'],
+          ['SQL reports','TC-20 → TC-25','report structure, count accuracy, category grouping, sort order'],
+          ['API failures','TC-26 → TC-31','no URL, empty batch, bad types, missing feed, malformed dates'],
+          ['Escalation','TC-32 → TC-35','hard fail vs warn, territory blocks, threshold escalation, 300-record gate'],
+        ].map(([s,c,d])=>`<tr>
+          <td style="font-weight:600">${s}</td>
+          <td style="font-family:var(--mono);font-size:11px;color:var(--vi2)">${c}</td>
+          <td style="color:var(--tx2);font-size:11px">${d}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  RUN TRIGGER
+// ══════════════════════════════════════════════════════════════════════════════
+
+async function runFor(partnerId) {
+  const btns = [document.getElementById('pRunBtn'), document.getElementById('runBtn')].filter(Boolean);
+  btns.forEach(b => { b.disabled = true; b.innerHTML = '<span class="spin"></span> Running…'; });
+  showToast('▶ Pipeline started — 6 validators, 40 scenarios');
+
+  try {
+    const { run_id } = await API.triggerRun(partnerId, 300);
+    let done = false, tries = 0;
+    while (!done && tries < 40) {
+      await new Promise(r => setTimeout(r, 1500));
+      const run = await API.run(run_id);
+      if (run.status === 'complete') {
+        done = true;
+        const s = run.summary;
+        showToast(`✅ Complete — ${s.pass_rate}% pass · ${s.fail} failures · ${s.total_checks} checks`);
+        await refresh();
+        await nav('partner', partnerId);
+      }
+      tries++;
+    }
+    if (!done) showToast('⚠️ Run is taking longer than expected');
+  } catch (e) {
+    showToast('❌ ' + e.message);
+  } finally {
+    btns.forEach(b => { b.disabled = false; b.innerHTML = '▶ Run Validation'; });
+  }
+}
+
+function triggerRun() {
+  const pid = currentPartner || PARTNERS[0]?.id;
+  if (pid) runFor(pid);
+  else showToast('⚠️ No partner selected');
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  CHARTS
+// ══════════════════════════════════════════════════════════════════════════════
+
+const GC = 'rgba(255,255,255,0.05)';
+const TC = 'rgba(240,239,254,0.35)';
+
+function mk(id, cfg) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (charts[id]) { try{charts[id].destroy()}catch(e){} }
+  charts[id] = new Chart(el, cfg);
+}
+
+async function buildCharts() {
+  if (currentView === 'dashboard') {
+    const rated = PARTNERS.filter(p=>p.pass_rate!=null);
+    if (rated.length) {
+      mk('chPartners', { type:'bar',
+        data:{ labels:rated.map(p=>p.name.split(' ')[0]),
+          datasets:[
+            { data:rated.map(p=>p.pass_rate), backgroundColor:rated.map(p=>p.color1+'cc'), borderRadius:5, barThickness:28 },
+            { data:rated.map(()=>95), type:'line', borderColor:'rgba(255,255,255,.25)', borderDash:[4,4], pointRadius:0, fill:false, borderWidth:1.5 }]},
+        options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+          scales:{ x:{grid:{color:GC},ticks:{color:TC,font:{size:11}}},
+                   y:{min:70,max:100,grid:{color:GC},ticks:{color:TC,font:{size:11},callback:v=>v+'%'}}}}});
+      mk('chDonut', { type:'doughnut',
+        data:{ labels:['Passed','Failed','Warned'],
+          datasets:[{ data:[METRICS.passed,METRICS.failed,METRICS.warned],
+            backgroundColor:['#10b981','#f43f5e','#f59e0b'], borderWidth:3, borderColor:'#05050f', hoverOffset:6 }]},
+        options:{ responsive:true, maintainAspectRatio:false, cutout:'72%', plugins:{legend:{display:false}}}});
+    }
+  }
+
+  if (currentView === 'partner' && currentPartner) {
+    let p; try { p = await API.partner(currentPartner); } catch(e){ return; }
+    const cats = p.latest_run?.categories || [];
+    const s = p.latest_run?.summary;
+    if (!cats.length || !s) return;
+    mk('chFail', { type:'bar',
+      data:{ labels:cats.map(c=>c.label.split(' ').slice(0,2).join(' ')),
+        datasets:[{ data:cats.map(c=>c.fail),
+          backgroundColor:['rgba(139,127,248,.8)','rgba(244,63,94,.8)','rgba(249,115,22,.8)','rgba(245,158,11,.8)','rgba(34,211,238,.8)','rgba(236,72,153,.8)'],
+          borderRadius:4, barThickness:18 }]},
+      options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+        scales:{ x:{grid:{color:GC},ticks:{color:TC,font:{size:11}}}, y:{grid:{display:false},ticks:{color:TC,font:{size:11}}}}}});
+    mk('chPd', { type:'doughnut',
+      data:{ labels:['Pass','Fail','Warn'],
+        datasets:[{ data:[s.pass,s.fail,s.warn], backgroundColor:['#10b981','#f43f5e','#f59e0b'],
+          borderWidth:3, borderColor:'#05050f', hoverOffset:6 }]},
+      options:{ responsive:true, maintainAspectRatio:false, cutout:'72%', plugins:{legend:{display:false}}}});
+  }
+
+  if (currentView === 'reports') {
+    const rated = PARTNERS.filter(p=>p.pass_rate!=null);
+    if (rated.length) {
+      mk('chReport', { type:'bar',
+        data:{ labels:rated.map(p=>p.name.split(' ')[0]),
+          datasets:[
+            { data:rated.map(p=>p.pass_rate), backgroundColor:rated.map(p=>p.color1+'cc'), borderRadius:5, barThickness:32 },
+            { data:rated.map(()=>95), type:'line', borderColor:'rgba(255,255,255,.25)', borderDash:[4,4], pointRadius:0, fill:false, borderWidth:1.5 }]},
+        options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+          scales:{ x:{grid:{color:GC},ticks:{color:TC}}, y:{min:0,max:100,grid:{color:GC},ticks:{color:TC,callback:v=>v+'%'}}}}});
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════════════════════════════════════════
+
+function animateCounters() {
+  document.querySelectorAll('.cnt').forEach(el => {
+    const t = parseInt(el.dataset.t) || 0;
+    let v = 0;
+    const step = () => { v = Math.min(v + Math.ceil(t/22), t); el.textContent = v.toLocaleString(); if (v<t) requestAnimationFrame(step); };
+    setTimeout(()=>requestAnimationFrame(step), 150);
+  });
+}
+
+function animateBars() {
+  setTimeout(() => {
+    document.querySelectorAll('.kpi-fill').forEach(el => el.style.width = el.dataset.w + '%');
+    document.querySelectorAll('.sc-fill').forEach(el => el.style.width = el.dataset.w + '%');
+  }, 200);
+}
+
+let toastT;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'flex';
+  clearTimeout(toastT);
+  toastT = setTimeout(() => t.style.display='none', 4500);
+}
+
+function tick() {
+  document.getElementById('clock').textContent =
+    new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}) + ' UTC';
+}
+tick(); setInterval(tick, 1000);
+
+// ── Demo fallback if API is unreachable ───────────────────────────────────────
+const DEMO_PARTNERS = [
+  {id:'acme',name:'Acme Studios',initial:'A',type:'Premium Content Partner · Hollywood, CA',tier:'Premium Tier',contract:'CNT-2026-001',onboarded:'2026-01-10',content_type:'Feature films, series',territories:'US, GB, CA, AU',formats:'H.264, HEVC, AV1',feed_type:'XML (XSD v2.1)',total_assets:500,color1:'#8b7ff8',color2:'#06b6d4',status:'queued',run_count:0,pass_rate:null},
+  {id:'globalmax',name:'GlobalMax Entertainment',initial:'G',type:'International Distributor · London, UK',tier:'Enterprise Tier',contract:'CNT-2026-002',onboarded:'2026-01-15',content_type:'Documentaries, news',territories:'EU, UK, AU, NZ',formats:'H.264, HEVC',feed_type:'JSON manifest',total_assets:320,color1:'#06b6d4',color2:'#10b981',status:'queued',run_count:0,pass_rate:null},
+  {id:'indie',name:'Indie Films Co.',initial:'I',type:'Independent Studio · Austin, TX',tier:'Starter Tier',contract:'CNT-2026-003',onboarded:'2026-01-20',content_type:'Short films, indie',territories:'US only',formats:'H.264',feed_type:'XML (XSD v1.8)',total_assets:80,color1:'#f59e0b',color2:'#f43f5e',status:'queued',run_count:0,pass_rate:null},
+  {id:'legacy',name:'Legacy Media Group',initial:'L',type:'Archive & Classics · New York, NY',tier:'Standard Tier',contract:'CNT-2026-004',onboarded:'2026-01-22',content_type:'Classic cinema, docs',territories:'US, CA',formats:'H.264, MPEG-2',feed_type:'XML (XSD v2.0)',total_assets:250,color1:'#6366f1',color2:'#8b5cf6',status:'queued',run_count:0,pass_rate:null},
+];
+const DEMO_SCENARIOS = [
+  {key:'metadata',label:'Metadata validation',description:'title, genre, rating, language, duration, year',checks:12},
+  {key:'xml_feed',label:'XML / Feed parsing',description:'XSD schema, encoding, namespaces, required elements',checks:8},
+  {key:'asset_check',label:'Asset availability',description:'URL reachability, HTTPS, CDN headers, redirects',checks:6},
+  {key:'media_probe',label:'FFmpeg media probe',description:'codec, bitrate, resolution, container, audio track',checks:8},
+  {key:'duplicate_ids',label:'Duplicate ID scan',description:'content_id uniqueness within batch and cross-partner',checks:3},
+  {key:'golive',label:'Go-live readiness',description:'rights windows, launch dates, ratings lock, territories',checks:3},
+];
+
+// ── GO ────────────────────────────────────────────────────────────────────────
+boot();
+</script>
+</body>
+</html>
