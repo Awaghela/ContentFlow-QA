@@ -93,43 +93,6 @@ open frontend/index.html
 
 ---
 
-## Project structure
-
-```
-contentflow-v2/
-├── backend/
-│   ├── main.py               FastAPI app
-│   ├── config.py             Environment config
-│   ├── models.py             SQLAlchemy ORM models
-│   ├── database.py           DB connection
-│   ├── validators/
-│   │   ├── metadata.py       Metadata field validation
-│   │   ├── xml_feed.py       XML/JSON feed parsing
-│   │   ├── asset_check.py    URL reachability probes
-│   │   ├── media_probe.py    FFmpeg video analysis
-│   │   ├── duplicate_ids.py  content_id uniqueness
-│   │   └── golive.py         Go-live readiness gate
-│   ├── reports/
-│   │   └── summary.py        Ops report generator
-│   └── tests/                pytest test suite (14 tests)
-├── frontend/
-│   └── index.html            Full dashboard (single file)
-├── scripts/
-│   ├── run_validation.py     CLI pipeline runner
-│   └── generate_sample_data.py
-├── sql/
-│   ├── schema.sql            PostgreSQL tables + views
-│   └── seed.sql              4 partners, 3 runs seed data
-├── docker/
-│   ├── Dockerfile.backend    Python + FFmpeg
-│   └── Dockerfile.frontend   Static file server
-├── docker-compose.yml
-├── requirements.txt
-└── .env.example
-```
-
----
-
 ## Sample output
 
 ```
