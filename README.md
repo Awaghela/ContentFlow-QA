@@ -8,28 +8,36 @@ ContentFlow QA is a production-grade quality gate for streaming platforms onboar
 
 ### Validation categories
 
-| Category | Checks | Description |
-|---|---|---|
-| Metadata | 12 | title, genre, rating, language, duration, year, synopsis... |
-| XML / Feed | 8 | XSD schema, encoding, namespace, malformed tags |
-| Asset availability | 6 | URL reachability, HTTPS, CDN headers, redirects |
-| FFmpeg media probe | 8 | codec, bitrate, resolution, container, audio |
-| Duplicate IDs | 3 | content_id uniqueness within batch and cross-partner |
-| Go-live readiness | 3 | rights windows, launch dates, ratings lock |
+| Category           | Checks | Description                                                 |
+| ------------------ | ------ | ----------------------------------------------------------- |
+| Metadata           | 12     | title, genre, rating, language, duration, year, synopsis... |
+| XML / Feed         | 8      | XSD schema, encoding, namespace, malformed tags             |
+| Asset availability | 6      | URL reachability, HTTPS, CDN headers, redirects             |
+| FFmpeg media probe | 8      | codec, bitrate, resolution, container, audio                |
+| Duplicate IDs      | 3      | content_id uniqueness within batch and cross-partner        |
+| Go-live readiness  | 3      | rights windows, launch dates, ratings lock                  |
 
 ---
 
 ## Tech stack
 
-| Layer | Technology |
-|---|---|
-| Backend API | Python 3.12, FastAPI |
-| Validation engine | Python validators, FFmpeg/ffprobe, xmlschema, lxml |
-| Database | PostgreSQL 16, SQLAlchemy 2.0, Alembic |
-| Frontend | Single-page HTML/JS dashboard (no framework needed) |
-| Containerisation | Docker, Docker Compose |
-| Testing | pytest, 14 passing tests |
-| CLI | `scripts/run_validation.py` |
+| Layer             | Technology                                          |
+| ----------------- | --------------------------------------------------- |
+| Backend API       | Python 3.12, FastAPI                                |
+| Validation engine | Python validators, FFmpeg/ffprobe, xmlschema, lxml  |
+| Database          | PostgreSQL 16, SQLAlchemy 2.0, Alembic              |
+| Frontend          | Single-page HTML/JS dashboard (no framework needed) |
+| Containerisation  | Docker, Docker Compose                              |
+| Testing           | pytest, 14 passing tests                            |
+| CLI               | `scripts/run_validation.py`                         |
+
+---
+
+# ContentFlow QA — Media Partner Onboarding Validation Platform
+
+🔗 **[Live Dashboard](https://contentflow-qa.vercel.app/)** ·
+**[API Docs](https://contentflow-qa-production.up.railway.app/docs)** ·
+**[API Health](https://contentflow-qa-production.up.railway.app/api/health)**
 
 ---
 
@@ -78,15 +86,15 @@ open frontend/index.html
 
 ## API endpoints
 
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/` | Health check |
-| GET | `/api/metrics` | Platform-wide aggregate metrics |
-| GET | `/api/runs` | List all validation runs |
-| POST | `/api/runs?partner=name` | Trigger a new validation run |
-| GET | `/api/runs/{run_id}` | Full run details + results |
-| GET | `/api/runs/{run_id}/report` | Ops-ready issue report |
-| POST | `/api/upload` | Upload XML/JSON feed file |
+| Method | Endpoint                    | Description                     |
+| ------ | --------------------------- | ------------------------------- |
+| GET    | `/`                         | Health check                    |
+| GET    | `/api/metrics`              | Platform-wide aggregate metrics |
+| GET    | `/api/runs`                 | List all validation runs        |
+| POST   | `/api/runs?partner=name`    | Trigger a new validation run    |
+| GET    | `/api/runs/{run_id}`        | Full run details + results      |
+| GET    | `/api/runs/{run_id}/report` | Ops-ready issue report          |
+| POST   | `/api/upload`               | Upload XML/JSON feed file       |
 
 ---
 
